@@ -6,27 +6,28 @@
   <title>Mersenne Twister!</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
   <style>
-    .wrapper {
-      width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-    }
 
     .game {
-      width: 100%;
       text-align: center;
+      position: absolute;
+      top: 5%;
+      left: 30%;
+      width: 40%;
+      z-index: 10000;
     }
 
     button {
       margin: 1%;
+      z-index: 1000;
     }
 
-    body {
+    #graph {
+      z-index: -100;
       margin-top: 5%;
     }
 
     .over {
-      margin-top: 20%;
+      margin-top: 10%;
     }
 
     .modebar {
@@ -43,9 +44,9 @@
       <h5>Score: {{score}}</h5>
       <button type="button" class="btn btn-outline" v-on:click="answer(false)">CRAND</button>
       <button type="button" class="btn btn-outline" v-on:click="answer(true)">Mersenne Twister</button>
-      <div id="graph"></div>
     </div>
-    <div class="game over" v-else>
+    <div id="graph" v-if="!isOver"></div>
+    <div class="game over" v-if="isOver">
       <h1>Game over!</h1>
       <h2>Score: {{score}}</h2>
     </div>
