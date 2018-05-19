@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.plot.ly/plotly-1.2.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.js"></script>
+  <title>Mersenne Twister!</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+  <style>
+    .wrapper {
+      width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .game {
+      width: 100%;
+      text-align: center;
+    }
+
+    button {
+      margin: 1%;
+    }
+
+    body {
+      margin-top: 5%;
+    }
+
+    .over {
+      margin-top: 20%;
+    }
+
+    .modebar {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="wrapper">
+    <div class="game" v-if="!isOver">
+      <h1>Level {{level}}/{{nLevels}}</h1>
+      <pre>rand() >> {{dropBits}}; n = {{n}};</pre>
+      <h5>Score: {{score}}</h5>
+      <button type="button" class="btn btn-outline" v-on:click="answer(false)">CRAND</button>
+      <button type="button" class="btn btn-outline" v-on:click="answer(true)">Mersenne Twister</button>
+      <div id="graph"></div>
+    </div>
+    <div class="game over" v-else>
+      <h1>Game over!</h1>
+      <h2>Score: {{score}}</h2>
+    </div>
+  </div>
+</div>
+<script src="long.js"></script>
+<script src="crand.js"></script>
+<script src="mersenne-twister.js"></script>
+<script>
+
+function MTGenerator() {
+  const mt = new MersenneTwister();
+  return () => mt.genrand_int32();
+}
+
+const game = new Vue({
+  el: '#app',
+  data: {
+    level: 1,
+    nLevels: 40,
+    score: 0,
+    isReallyMt: null,
+    dropBits: 0,
+    n: 0,
+    isOver: false
+  },
+  methods: {
+    renderLevel() {
+      this.isReallyMt = Math.random() > 0.5;
+      let generator;
+      if (this.isReallyMt) {
+        generator = MTGenerator();
+      } else {
+        generator = CRandGenerator();
+      }
+
+      const ticks = {
+        showticklabels: false,
+        showgrid: false,
+        zeroline: false
+      }
+
+      const layout = {
+        height: 700,
+        scene: {
+          xaxis: ticks,
+          yaxis: ticks,
+          zaxis: ticks
+        }
+      };
+
+      function render(arr) {
+          return {
+              type: 'scatter3d',
+              hoverinfo: 'none',
+              mode: 'markers',
+              x: arr.map(v => v.x),
+              y: arr.map(v => v.y), // data is in image coordinates
+              z: arr.map(v => v.z),
+              marker: { size: 2 }
+          };
+      }
+
+      this.n = 5000 - this.level * 100;
+      this.dropBits = Math.min(Math.floor(this.level / 4) + 5, 11);
+      Plotly.newPlot('graph', [render(generateData(generator, this.n, this.dropBits))], layout);
+    },
+
+    answer(isMt) {
+      if (isMt === this.isReallyMt) {
+        this.score++;
+      }
+      this.level++;
+      if (this.level <= this.nLevels) {
+        this.renderLevel();
+      } else {
+        this.isOver = true;
+      }
+    },
+
+    start() {
+      this.renderLevel();
+    }
+  }
+});
+
+
+function selectRand(i) {
+  game.select(i);
+}
+
+function generateData(uint32Generator, n, dropBits = 0) {
+
+  function floatGenerator() {
+    //return uint32Generator() / 4294967296.0;
+    const boxSize = 1 << 8;
+
+    //const boxSize = 4294967296.0;
+    return (Math.floor(uint32Generator() / (1 << dropBits)) % boxSize) / boxSize;
+  }
+
+  let data = [];
+  for (let i = 0; i < n; ++i) {
+    data.push({
+      x: floatGenerator(),
+      y: floatGenerator(),
+      z: floatGenerator()
+    });
+  }
+
+  return data;
+}
+game.start();
+
+</script>
+</body>
+</html>
