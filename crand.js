@@ -1,3 +1,5 @@
+// Returns the full 32 bit state of the C random number generator
+// the actual implementation drops the lowest 16 and highest 1 bit
 function CRandGenerator(seed) {
   if (seed === undefined) {
     seed = new Date().getTime();
@@ -9,7 +11,5 @@ function CRandGenerator(seed) {
     next = next.mul(1103515245).add(12345);
     next = new Long(next.getLowBitsUnsigned(), 0, true);
     return next.getLowBitsUnsigned();
-    //return Math.floor(next.getLowBitsUnsigned() / 65536) % 32768;
-    //return Math.floor(next / 65536) % 32768;
   };
 }

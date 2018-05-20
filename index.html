@@ -31,13 +31,18 @@
     }
 
     .modebar {
+      /* hide plotly controls */
       display: none !important;
+    }
+
+    [v-cloak] {
+      display: none;
     }
   </style>
 </head>
 <body>
 <div id="app">
-  <div class="wrapper">
+  <div class="wrapper" v-cloak>
     <div class="game" v-if="!isOver">
       <h1>Level {{level}}/{{nLevels}}</h1>
       <pre>rand() >> {{dropBits}}; n = {{n}};</pre>
