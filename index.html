@@ -38,6 +38,14 @@
     [v-cloak] {
       display: none;
     }
+
+    .correct {
+      color: #008000
+    }
+
+    .incorrect {
+      color: #800000
+    }
   </style>
 </head>
 <body>
@@ -46,7 +54,7 @@
     <div class="game" v-if="!isOver">
       <h1>Level {{level}}/{{nLevels}}</h1>
       <pre>(rand() >> {{dropBits}}) &amp; 0xff; n = {{n}};</pre>
-      <h5>Score: {{score}}</h5>
+      <h5 v-bind:class="scoreClass()">Score: {{score}}</h5>
       <button type="button" class="btn btn-outline" v-on:click="answer(false)">CRAND</button>
       <button type="button" class="btn btn-outline" v-on:click="answer(true)">Mersenne Twister</button>
     </div>
@@ -76,7 +84,8 @@ const game = new Vue({
     isReallyMt: null,
     dropBits: 0,
     n: 0,
-    isOver: false
+    isOver: false,
+    wasCorrect: null
   },
   methods: {
     renderLevel() {
@@ -125,7 +134,8 @@ const game = new Vue({
     },
 
     answer(isMt) {
-      if (isMt === this.isReallyMt) {
+      this.wasCorrect = isMt === this.isReallyMt;
+      if (this.wasCorrect) {
         this.score++;
       }
       this.level++;
@@ -138,6 +148,12 @@ const game = new Vue({
 
     start() {
       this.renderLevel();
+    },
+
+    scoreClass() {
+      if (this.wasCorrect === null) return '';
+      if (this.wasCorrect) return 'correct';
+      return 'incorrect';
     }
   }
 });
@@ -145,10 +161,7 @@ const game = new Vue({
 function generateData(uint32Generator, n, dropBits = 0) {
 
   function floatGenerator() {
-    //return uint32Generator() / 4294967296.0;
     const boxSize = 1 << 8;
-
-    //const boxSize = 4294967296.0;
     return (Math.floor(uint32Generator() / (1 << dropBits)) % boxSize) / boxSize;
   }
 
@@ -164,6 +177,7 @@ function generateData(uint32Generator, n, dropBits = 0) {
 
   return data;
 }
+
 game.start();
 
 </script>
