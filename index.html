@@ -45,7 +45,7 @@
   <div class="wrapper" v-cloak>
     <div class="game" v-if="!isOver">
       <h1>Level {{level}}/{{nLevels}}</h1>
-      <pre>rand() >> {{dropBits}}; n = {{n}};</pre>
+      <pre>(rand() >> {{dropBits}}) &amp; 0xff; n = {{n}};</pre>
       <h5>Score: {{score}}</h5>
       <button type="button" class="btn btn-outline" v-on:click="answer(false)">CRAND</button>
       <button type="button" class="btn btn-outline" v-on:click="answer(true)">Mersenne Twister</button>
@@ -92,7 +92,7 @@ const game = new Vue({
         showticklabels: false,
         showgrid: false,
         zeroline: false
-      }
+      };
 
       const layout = {
         height: 700,
@@ -109,9 +109,13 @@ const game = new Vue({
               hoverinfo: 'none',
               mode: 'markers',
               x: arr.map(v => v.x),
-              y: arr.map(v => v.y), // data is in image coordinates
+              y: arr.map(v => v.y),
               z: arr.map(v => v.z),
-              marker: { size: 2 }
+              marker: {
+                size: 2,
+                color: arr.map(v => v.c),
+                colorscale: 'Rainbow'
+              }
           };
       }
 
@@ -138,11 +142,6 @@ const game = new Vue({
   }
 });
 
-
-function selectRand(i) {
-  game.select(i);
-}
-
 function generateData(uint32Generator, n, dropBits = 0) {
 
   function floatGenerator() {
@@ -158,7 +157,8 @@ function generateData(uint32Generator, n, dropBits = 0) {
     data.push({
       x: floatGenerator(),
       y: floatGenerator(),
-      z: floatGenerator()
+      z: floatGenerator(),
+      c: floatGenerator()
     });
   }
 
